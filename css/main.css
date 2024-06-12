@@ -1,0 +1,59 @@
+table {
+	width: 100%;
+	text-align: left;
+	position: relative;
+	border-collapse: collapse; 
+}
+th, td {
+	padding: 10px;
+	cursor: pointer;
+	word-break: break-word;
+}
+tr.red th {
+	background: red;
+	color: white;
+}
+tr.green th {
+	background: green;
+	color: white;
+}
+tr.purple th {
+	background: purple;
+	color: white;
+}
+th {
+	background: white;
+	position: sticky;
+	top: 0; /* Don't forget this, required for the stickiness */
+	box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
+}
+
+input[type=checkbox] {
+	transform: scale(2.1);
+}
+
+.list {
+	height: 100vh;
+	max-height: 30vh;
+	overflow-y: auto;
+}
+
+@media (min-width: 1024px) {
+	.list {
+		max-height: 99vh;
+	}
+}
+
+.pure-table td.title {
+	line-height: 40px;
+	font-size: 18px;
+}
+
+.list {
+	height: calc(100vh - 100px);
+	max-height: 100%;
+}
+
+#scrollArea {
+	max-height: calc(100% - 100px);
+}
