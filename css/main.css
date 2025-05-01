@@ -1,35 +1,51 @@
 table {
-	width: 100%;
+	/* width: 100%; */
 	text-align: left;
 	position: relative;
-	border-collapse: collapse; 
+	border-collapse: collapse;
 }
+
+th {
+	cursor: pointer;
+}
+
 th, td {
 	padding: 10px;
-	cursor: pointer;
 	word-break: break-word;
 }
+
 tr.red th {
 	background: red;
 	color: white;
 }
+
 tr.green th {
 	background: green;
 	color: white;
 }
+
 tr.purple th {
 	background: purple;
 	color: white;
 }
+
+thead tr {
+	position: sticky;
+	top: 0;
+	box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
+}
+
 th {
 	background: white;
-	position: sticky;
-	top: 0; /* Don't forget this, required for the stickiness */
-	box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
 }
 
 input[type=checkbox] {
 	transform: scale(2.1);
+	margin-right: 10px;
+}
+
+input[type=checkbox]+label {
+	margin-right: 10px;
 }
 
 .list {
@@ -50,10 +66,51 @@ input[type=checkbox] {
 }
 
 .list {
-	height: calc(100vh - 100px);
+	/* height: calc(100vh - 100px); */
 	max-height: 100%;
 }
 
 #scrollArea {
-	max-height: calc(100% - 100px);
+	max-height: calc(100% - 36px);
+	scroll-padding-top: 70px;;
+}
+
+
+
+
+.hideRow {
+	opacity: 0;
+	font-size: 0;
+}
+
+.pure-menu-link {
+	color: blue;
+}
+
+.pure-menu-link:visited {
+	color: darkblue;
+}
+
+.button-success,
+.button-error,
+.button-warning,
+.button-secondary {
+	color: white;
+	text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.button-success {
+	background: rgb(28, 184, 65);
+}
+
+.button-error {
+	background: rgb(202, 60, 60);
+}
+
+.button-warning {
+	background: rgb(223, 117, 20);
+}
+
+.button-secondary {
+	background: rgb(66, 184, 221);
 }

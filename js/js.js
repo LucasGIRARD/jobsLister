@@ -1,380 +1,291 @@
-
-var idActualVideo;
-var loading = false;
-
-var imagesLoaded = [];
-var totalImages;
-
-var loadThumb, loadVideo;
-
-var notCalculated = true;
-
-const waitFor = (ms) => new Promise(r => setTimeout(r, ms));
-
-var yourCallback;
-
-$(document).ready(function() {
+$(document).ready(function () {
+	/*
 	var clusterize = new Clusterize({
 		scrollId: 'scrollArea',
 		contentId: 'contentArea'
 	});
+	*/
+
+	var column_names = [];
+	var clicks = {};
+	var data = [];
+
+	var table = d3.select("table");
+
+	var headers = d3.select("table thead").selectAll("th");
+
+	headers.each(function (d, i) {
+		var cell = d3.select(this);
+		column_names[i] = cell.text();
+		clicks[column_names[i]] = 0;
+	});
+
+	headers.data(column_names);
 
 
+	var rows = table.select("tbody").selectAll("tr");
+
+	rows.each(function () {
+		var row = d3.select(this);
+		var rowData = {};
+		row.selectAll("td").each(function (d, i) {
+			var cell = d3.select(this);
+			rowData[column_names[i]] = cell.text();
+		});
+		data.push(rowData);
+	});
+
+	/*  data bind */
+	rows.data(data);
+
+	/**  search functionality **//* 
+	d3.select("#newFilter").on("keyup", function () {
+		var searched_data = data,
+			text = this.value.trim();
+		if (text == "") {
+			d3.select("tr.hideRow").classed("hideRow", false);
+		} else {
+			var searchResults = searched_data.map(function (r) {
+				value = r.name;
+
+				var regex = new RegExp("^" + text + ".*", "i");
+				if (!regex.test(value)) {
+					d3.select("#row-" + r.id).classed("hideRow", true);
+				} else {
+					d3.select("#row-" + r.id).classed("hideRow", false);
+				}
 
 
-	var column_names = ["Title","Views","Created On","URL"];
-	var clicks = {title: 0, views: 0, created_on: 0, url: 0};
-
-// draw the table
-d3.select("body").append("div")
-.attr("id", "container")
-
-d3.select("#container").append("div")
-.attr("id", "FilterableTable");
-
-d3.select("#FilterableTable").append("h1")
-.attr("id", "title")
-.text("My Youtube Channels")
-
-d3.select("#FilterableTable").append("div")
-.attr("class", "SearchBar")
-.append("p")
-.attr("class", "SearchBar")
-.text("Search By Title:");
-
-d3.select(".SearchBar")
-.append("input")
-.attr("class", "SearchBar")
-.attr("id", "search")
-.attr("type", "text")
-.attr("placeholder", "Search...");
-
-var table = d3.select("#FilterableTable").append("table");
-table.append("thead").append("tr"); 
-
-var headers = table.select("tr").selectAll("th")
-.data(column_names)
-.enter()
-.append("th")
-.text(function(d) { return d; });
-
-var rows, row_entries, row_entries_no_anchor, row_entries_with_anchor;
-
-d3.json("data.json", function(data) { // loading data from server
-
-// draw table body with rows
-table.append("tbody")
-
-// data bind
-rows = table.select("tbody").selectAll("tr")
-.data(data, function(d){ return d.id; });
-
-// enter the rows
-rows.enter()
-.append("tr")
-
-// enter td's in each row
-row_entries = rows.selectAll("td")
-.data(function(d) { 
-	var arr = [];
-	for (var k in d) {
-		if (d.hasOwnProperty(k)) {
-			arr.push(d[k]);
+			})
 		}
-	}
-	return [arr[3],arr[1],arr[2],arr[0]];
-})
-.enter()
-.append("td") 
-
-// draw row entries with no anchor 
-row_entries_no_anchor = row_entries.filter(function(d) {
-	return (/https?:\/\//.test(d) == false)
-})
-row_entries_no_anchor.text(function(d) { return d; })
-
-// draw row entries with anchor
-row_entries_with_anchor = row_entries.filter(function(d) {
-	return (/https?:\/\//.test(d) == true)  
-})
-row_entries_with_anchor
-.append("a")
-.attr("href", function(d) { return d; })
-.attr("target", "_blank")
-.text(function(d) { return d; })
+	}) */
 
 
-/**  search functionality **/
-d3.select("#search")
-.on("keyup", function() { // filter according to key pressed 
-	var searched_data = data,
-	text = this.value.trim();
-
-	var searchResults = searched_data.map(function(r) {
-		var regex = new RegExp("^" + text + ".*", "i");
-if (regex.test(r.title)) { // if there are any results
-return regex.exec(r.title)[0]; // return them to searchResults
-} 
-})
-
-// filter blank entries from searchResults
-searchResults = searchResults.filter(function(r){ 
-	return r != undefined;
-})
-
-// filter dataset with searchResults
-searched_data = searchResults.map(function(r) {
-	return data.filter(function(p) {
-		return p.title.indexOf(r) != -1;
-	})
-})
-
-// flatten array 
-searched_data = [].concat.apply([], searched_data)
-
-// data bind with new data
-rows = table.select("tbody").selectAll("tr")
-.data(searched_data, function(d){ return d.id; })
-
-// enter the rows
-rows.enter()
-.append("tr");
-
-// enter td's in each row
-row_entries = rows.selectAll("td")
-.data(function(d) { 
-	var arr = [];
-	for (var k in d) {
-		if (d.hasOwnProperty(k)) {
-			arr.push(d[k]);
-		}
-	}
-	return [arr[3],arr[1],arr[2],arr[0]];
-})
-.enter()
-.append("td") 
-
-// draw row entries with no anchor 
-row_entries_no_anchor = row_entries.filter(function(d) {
-	return (/https?:\/\//.test(d) == false)
-})
-row_entries_no_anchor.text(function(d) { return d; })
-
-// draw row entries with anchor
-row_entries_with_anchor = row_entries.filter(function(d) {
-	return (/https?:\/\//.test(d) == true)  
-})
-row_entries_with_anchor
-.append("a")
-.attr("href", function(d) { return d; })
-.attr("target", "_blank")
-.text(function(d) { return d; })
-
-// exit
-rows.exit().remove();
-})
-
-/**  sort functionality **/
-headers
-.on("click", function(d) {
-	if (d == "Title") {
-		clicks.title++;
-// even number of clicks
-if (clicks.title % 2 == 0) {
-// sort ascending: alphabetically
-rows.sort(function(a,b) { 
-	if (a.title.toUpperCase() < b.title.toUpperCase()) { 
-		return -1; 
-	} else if (a.title.toUpperCase() > b.title.toUpperCase()) { 
-		return 1; 
-	} else {
-		return 0;
-	}
-});
-// odd number of clicks  
-} else if (clicks.title % 2 != 0) { 
-// sort descending: alphabetically
-rows.sort(function(a,b) { 
-	if (a.title.toUpperCase() < b.title.toUpperCase()) { 
-		return 1; 
-	} else if (a.title.toUpperCase() > b.title.toUpperCase()) { 
-		return -1; 
-	} else {
-		return 0;
-	}
-});
-}
-} 
-if (d == "Views") {
-	clicks.views++;
-// even number of clicks
-if (clicks.views % 2 == 0) {
-// sort ascending: numerically
-rows.sort(function(a,b) { 
-	if (+a.views < +b.views) { 
-		return -1; 
-	} else if (+a.views > +b.views) { 
-		return 1; 
-	} else {
-		return 0;
-	}
-});
-// odd number of clicks  
-} else if (clicks.views % 2 != 0) { 
-// sort descending: numerically
-rows.sort(function(a,b) { 
-	if (+a.views < +b.views) { 
-		return 1; 
-	} else if (+a.views > +b.views) { 
-		return -1; 
-	} else {
-		return 0;
-	}
-});
-}
-} 
-if (d == "Created On") {
-	clicks.created_on++;
-	if (clicks.created_on % 2 == 0) {
-// sort ascending: by date
-rows.sort(function(a,b) { 
-// grep date and time, split them apart, make Date objects for comparing  
-var date = /[\d]{4}-[\d]{2}-[\d]{2}/.exec(a.created_on);
-date = date[0].split("-"); 
-var time = /[\d]{2}:[\d]{2}:[\d]{2}/.exec(a.created_on);
-time = time[0].split(":");
-var a_date_obj = new Date(+date[0],(+date[1]-1),+date[2],+time[0],+time[1],+time[2]);
-
-date = /[\d]{4}-[\d]{2}-[\d]{2}/.exec(b.created_on);
-date = date[0].split("-"); 
-time = /[\d]{2}:[\d]{2}:[\d]{2}/.exec(b.created_on);
-time = time[0].split(":");
-var b_date_obj = new Date(+date[0],(+date[1]-1),+date[2],+time[0],+time[1],+time[2]);
-
-if (a_date_obj < b_date_obj) { 
-	return -1; 
-} else if (a_date_obj > b_date_obj) { 
-	return 1; 
-} else {
-	return 0;
-}
-});
-// odd number of clicks  
-} else if (clicks.created_on % 2 != 0) { 
-// sort descending: by date
-rows.sort(function(a,b) { 
-// grep date and time, split them apart, make Date objects for comparing  
-var date = /[\d]{4}-[\d]{2}-[\d]{2}/.exec(a.created_on);
-date = date[0].split("-"); 
-var time = /[\d]{2}:[\d]{2}:[\d]{2}/.exec(a.created_on);
-time = time[0].split(":");
-var a_date_obj = new Date(+date[0],(+date[1]-1),+date[2],+time[0],+time[1],+time[2]);
-
-date = /[\d]{4}-[\d]{2}-[\d]{2}/.exec(b.created_on);
-date = date[0].split("-"); 
-time = /[\d]{2}:[\d]{2}:[\d]{2}/.exec(b.created_on);
-time = time[0].split(":");
-var b_date_obj = new Date(+date[0],(+date[1]-1),+date[2],+time[0],+time[1],+time[2]);
-
-if (a_date_obj < b_date_obj) { 
-	return 1; 
-} else if (a_date_obj > b_date_obj) { 
-	return -1; 
-} else {
-	return 0;
-}
-});
-}
-}
-if (d == "URL") {
-	clicks.url++;
-// even number of clicks
-if (clicks.url % 2 == 0) {
-// sort ascending: alphabetically
-rows.sort(function(a,b) { 
-	if (a.thumb_url_default.toUpperCase() < b.thumb_url_default.toUpperCase()) { 
-		return -1; 
-	} else if (a.thumb_url_default.toUpperCase() > b.thumb_url_default.toUpperCase()) { 
-		return 1; 
-	} else {
-		return 0;
-	}
-});
-// odd number of clicks  
-} else if (clicks.url % 2 != 0) { 
-// sort descending: alphabetically
-rows.sort(function(a,b) { 
-	if (a.thumb_url_default.toUpperCase() < b.thumb_url_default.toUpperCase()) { 
-		return 1; 
-	} else if (a.thumb_url_default.toUpperCase() > b.thumb_url_default.toUpperCase()) { 
-		return -1; 
-	} else {
-		return 0;
-	}
-});
-}	
-}      
-}) // end of click listeners
-});
-d3.select(self.frameElement).style("height", "780px").style("width", "1150px");	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var btnNewFilter = document.getElementById('createNewFilter');
-if (btnNewFilter != null) {
-	btnNewFilter.addEventListener('click', function(){
-		var filter = document.getElementById("newFilter").value;
-		var httpRequest = new XMLHttpRequest();
-		httpRequest.onreadystatechange = function(data) {
-			if (httpRequest.readyState == '4' && httpRequest.status == '200') {
-				document.getElementById("newFilter").value = "";							
+	// 	/**  sort functionality **/
+	function sortAlphabetically(rows, key, ascending) {
+		rows.sort(function (a, b) {
+			if (a[key].toUpperCase() < b[key].toUpperCase()) {
+				return ascending ? -1 : 1;
+			} else if (a[key].toUpperCase() > b[key].toUpperCase()) {
+				return ascending ? 1 : -1;
+			} else {
+				return 0;
 			}
-		};
-		httpRequest.open("GET", "ajax.php?action=insertFilter&filter="+filter);
-		httpRequest.send();
-	}, false);
-}
+		});
+	}
+
+	function sortNumerically(rows, key, ascending) {
+		rows.sort(function (a, b) {
+			if (+a[key] < +b[key]) {
+				return ascending ? -1 : 1;
+			} else if (+a[key] > +b[key]) {
+				return ascending ? 1 : -1;
+			} else {
+				return 0;
+			}
+		});
+	}
+
+	function sortByDate(rows, key, ascending) {
+		rows.sort(function (a, b) {
+			var dateA = new Date(a[key]);
+			var dateB = new Date(b[key]);
+			if (dateA < dateB) {
+				return ascending ? -1 : 1;
+			} else if (dateA > dateB) {
+				return ascending ? 1 : -1;
+			} else {
+				return 0;
+			}
+		});
+	}
+
+	headers.on("click", function (d) {
+		clicks[d]++;
+		if (d == "number" || d == "salaryMin" || d == "salaryMax") {
+			sortNumerically(rows, d, clicks[d] % 2 == 0);
+		} else if (d == "date") {
+			sortByDate(rows, d, clicks[d] % 2 == 0);
+		} else {
+			sortAlphabetically(rows, d, clicks[d] % 2 == 0);
+		}
+	});
 
 
+	var chksHide = document.querySelectorAll('#hideCols input[type="checkbox"]');
+	if (chksHide.length > 0) {
+		chksHide.forEach(function (element) {
+			element.addEventListener('click', function () {
+				var col = element.dataset.col;
+				var table = document.querySelectorAll('table th:nth-child(' + col + '),table td:nth-child(' + col + ')');
+				if (element.checked) {
+					table.forEach(function (i) {
+						i.style.display = "none";
+						//i.style.width = "1px";
+					});
+				} else {
+					table.forEach(function (i) {
+						 i.style.display = "table-cell";
+						//i.style.width = "auto";
+					});
+				}
+			}, false);
+		});
+	}
 
 
-if (document.querySelector('#selectType') != null) {
-	document.querySelector('#selectType').addEventListener('change', function(){
-		location.href = location.origin + location.pathname + '?type='+ this.value;
-	}, false);
-}
-
-
-var selectsCompanyType = document.querySelectorAll('.setCompanyType');
-if (selectsCompanyType != null) {
-	selectsCompanyType.forEach(function(element) {
-		element.addEventListener('change', function(){
-			var that = this;
-			var id = element.id.split('-')[1];
+	var btnNewFilter = document.getElementById('createNewFilter');
+	if (btnNewFilter != null) {
+		btnNewFilter.addEventListener('click', function () {
+			var filter = document.getElementById("newFilter").value;
 			var httpRequest = new XMLHttpRequest();
-			httpRequest.onreadystatechange = function(data) {
+			httpRequest.onreadystatechange = function (data) {
 				if (httpRequest.readyState == '4' && httpRequest.status == '200') {
-					document.getElementById("R-Ajax-"+id).innerHTML = "OK";							
+					document.getElementById("newFilter").value = "";
 				}
 			};
-			httpRequest.open("GET", "ajax.php?action=updateCompanyType&type="+element.value+"&id="+id);
+			httpRequest.open("GET", "ajax.php?action=insertFilter&filter=" + filter);
 			httpRequest.send();
 		}, false);
-	});
-}
+	}
+	var btnReRunFilters = document.getElementById('reRunFilters');
+	if (btnReRunFilters != null) {
+		btnReRunFilters.addEventListener('click', function () {
+			var httpRequest = new XMLHttpRequest();
+			httpRequest.onreadystatechange = function (data) {
+				if (httpRequest.readyState == '4' && httpRequest.status == '200') {
+					alert('ReRunFilters fini');
+				}
+			};
+			httpRequest.open("GET", "ajax.php?action=ReRunFilters");
+			httpRequest.send();
+		}, false);
+	}
+
+	var btnsBanWord = document.querySelectorAll('.banWord');
+	if (btnsBanWord.length > 0) {
+		btnsBanWord.forEach(function (element) {
+			element.addEventListener('click', function () {
+				var filter = element.dataset.word;
+				var httpRequest = new XMLHttpRequest();
+				httpRequest.onreadystatechange = function (data) {
+					if (httpRequest.readyState == '4' && httpRequest.status == '200') {
+						element.parentElement.parentElement.remove();
+					}
+				};
+				httpRequest.open("GET", "ajax.php?action=insertFilter&filter=" + filter);
+				httpRequest.send();
+			}, false);
+		});
+	}
+	
+	var btnsBanWord = document.querySelectorAll('.banJob');
+	if (btnsBanWord.length > 0) {
+		btnsBanWord.forEach(function (element) {
+			element.addEventListener('click', function () {
+				var jobId = element.dataset.jobid;
+				var httpRequest = new XMLHttpRequest();
+				httpRequest.onreadystatechange = function (data) {
+					if (httpRequest.readyState == '4' && httpRequest.status == '200') {
+						element.remove();
+					}
+				};
+				httpRequest.open("GET", "ajax.php?action=filterJob&jobId=" + jobId);
+				httpRequest.send();
+			}, false);
+		});
+	}
+	var btnsBanWord = document.querySelectorAll('.safeWord');
+	if (btnsBanWord.length > 0) {
+		btnsBanWord.forEach(function (element) {
+			element.addEventListener('click', function () {
+				var filter = element.dataset.word;
+				var httpRequest = new XMLHttpRequest();
+				httpRequest.onreadystatechange = function (data) {
+					if (httpRequest.readyState == '4' && httpRequest.status == '200') {
+						element.parentElement.parentElement.remove();
+					}
+				};
+				httpRequest.open("GET", "ajax.php?action=insertSafeFilter&filter=" + filter);
+				httpRequest.send();
+			}, false);
+		});
+	}
+	var btnsBanWord = document.querySelectorAll('.esnRadio');
+	if (btnsBanWord.length > 0) {
+		btnsBanWord.forEach(function (element) {
+			element.addEventListener('change', function () {
+				var id = element.id.split('-')[2];
+				var esn = element.value;
+				var httpRequest = new XMLHttpRequest();
+				httpRequest.onreadystatechange = function (data) {
+					if (httpRequest.readyState == '4' && httpRequest.status == '200') {
+						
+					}
+				};
+				httpRequest.open("GET", "ajax.php?action=esnSociete&id=" + id + "&esn=" + esn);
+				httpRequest.send();
+			}, false);
+		});
+	}
+	
+	if (document.querySelector('#scrollArea') != null) {
+		var actualHash = location.hash;
+		var bottomMargin = document.querySelector("#scrollArea").offsetHeight -150;
+		var options = {
+			root: document.querySelector("#scrollArea"),
+			rootMargin: "-70px 0px -"+bottomMargin+"px 0px", //(top, right, bottom, left)
+			threshold: 1.0,
+		  };
+
+		  var callback = function (entries, observer) {
+			entries.forEach((entry) => {
+				if (entry.isIntersecting) {
+					actualHash = entry.target.id;
+					console.log(entry.target.id);
+				}			 
+			});
+		  };
+		  
+		var observer = new IntersectionObserver(callback, options);
+
+		document.querySelectorAll("#scrollArea tbody tr").forEach((i) => {
+			if (i) {
+				observer.observe(i);
+			}
+		});
+
+		
+
+		document.querySelector('#scrollArea').addEventListener('scrollend', function () {
+			location.hash = actualHash;
+		});
+	}
+
+
+	if (document.querySelector('#typeJ') != null) {
+		document.querySelector('#typeJ').addEventListener('change', function () {
+			location.href = location.origin + location.pathname + '?type=' + this.value;
+		}, false);
+	}
+
+
+	var selectsCompanyType = document.querySelectorAll('.setCompanyType');
+	if (selectsCompanyType != null) {
+		selectsCompanyType.forEach(function (element) {
+			element.addEventListener('change', function () {
+				var that = this;
+				var id = element.id.split('-')[1];
+				var httpRequest = new XMLHttpRequest();
+				httpRequest.onreadystatechange = function (data) {
+					if (httpRequest.readyState == '4' && httpRequest.status == '200') {
+						document.getElementById("R-Ajax-" + id).innerHTML = "OK";
+					}
+				};
+				httpRequest.open("GET", "ajax.php?action=updateCompanyType&type=" + element.value + "&id=" + id);
+				httpRequest.send();
+			}, false);
+		});
+	}
 
 });
