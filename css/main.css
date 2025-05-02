@@ -9,7 +9,8 @@ th {
 	cursor: pointer;
 }
 
-th, td {
+th,
+td {
 	padding: 10px;
 	word-break: break-word;
 }
@@ -48,6 +49,14 @@ input[type=checkbox]+label {
 	margin-right: 10px;
 }
 
+
+
+
+#hideCols li {
+	padding: 10px 0px;
+	padding-left: 10px;
+}
+
 .list {
 	height: 100vh;
 	max-height: 30vh;
@@ -71,12 +80,9 @@ input[type=checkbox]+label {
 }
 
 #scrollArea {
-	max-height: calc(100% - 36px);
-	scroll-padding-top: 70px;;
+	max-height: calc(100% - 60px);
+	scroll-padding-top: 70px;
 }
-
-
-
 
 .hideRow {
 	opacity: 0;
@@ -89,6 +95,18 @@ input[type=checkbox]+label {
 
 .pure-menu-link:visited {
 	color: darkblue;
+}
+
+.pure-menu-has-children.vertical>.pure-menu-link:after {
+	content: "\25B8";
+	font-size: small;
+	padding-left: .5em
+}
+
+.pure-menu-horizontal .vertical .pure-menu-children {
+	left: 100%;
+	top: 0;
+	width: auto
 }
 
 .button-success,
@@ -113,4 +131,57 @@ input[type=checkbox]+label {
 
 .button-secondary {
 	background: rgb(66, 184, 221);
+}
+
+
+table tr th:nth-child(1) {
+	width: 56px;
+}
+
+table tr th:nth-child(2) {
+	width: 120px;
+}
+
+table tr th:nth-child(4) {
+	width: 86px;
+}
+
+table tr th:nth-child(5) {
+	width: 120px;
+}
+
+table tr th:nth-child(6) {
+	width: 60px;
+}
+
+table tr th:nth-child(7) {
+	width: 56px;
+}
+
+table tr th:nth-child(8) {
+	width: 56px;
+}
+
+table tr th:nth-child(9) {
+	width: 94px;
+}
+
+table tr th:nth-child(10) {
+	width: 86px;
+}
+
+table tr th:nth-child(11) {
+	width: 102px;
+}
+
+table tr th:nth-child(12) {
+	width: 80px;
+}
+
+table tr th:nth-child(13) {
+	width: 88px;
+}
+
+table tr th:nth-child(14) {
+	width: 64px;
 }

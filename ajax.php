@@ -43,7 +43,6 @@ switch ($_GET['action']) {
 		$insertFilter = insertUpdate($connection, 'INSERT INTO FILTERS (value,safe) VALUES (?,1)', array(array($filter)));
 		break;
 	case 'ReRunFilters':
-		// set_time_limit(600);
 		if (!isset($_GET['i']) || empty($_GET['i'])) {
 			$i = 0;
 			select($connection, 'DELETE FROM JOBS_has_FILTERS WHERE id <> ""');
@@ -88,6 +87,61 @@ switch ($_GET['action']) {
 		//$i++;
 		if (isset($typesJ[$i])) {
 			echo '<meta http-equiv="Refresh" content="1; URL=/ajax.php?action=ReRunFilters&i=' . $i . '" />';
+		} else {
+			echo 'finished';
+		}
+		break;
+	case 'ReRunFiltersNEW':
+		if (!isset($_GET['i']) || empty($_GET['i'])) {
+			$i = 0;
+		} else {
+			$i = $_GET['i'];
+		}
+		if (isset($_GET['d'])) {
+			$d = $_GET['d'];
+		} else {
+			exit('missing d');
+		}
+		$typesJ = select($connection, "SELECT id, value FROM FILTERS WHERE safe = 0 ORDER BY value");
+		$max = $i + 10;
+		for ($i = $i; $i < $max; $i++) {
+			if (!isset($typesJ[$i])) {
+				break;
+			}
+
+			$typeJ = $typesJ[$i];
+			$filter = $typeJ['value'];
+
+			$before = array('% ', '%-', '%\'', '%/', '%,', '%(', '');
+			$after = array(' %', '-%', '%\'', '/%', ',%', ')%', '');
+			$filterSearch = array();
+			foreach ($before as $key => $value) {
+				foreach ($after as $key2 => $value2) {
+					$filterSearch[] = $value . $filter . $value2;
+				}
+			}
+
+
+			$sqlWhere = '(name like ?';
+			for ($y = 1; $y < count($filterSearch); $y++) {
+				$sqlWhere .= 'or name like ?';
+			}
+
+			$sqlWhere .= ') and imported > "' . $d . '"';
+
+			$jobsMatching = select($connection, "SELECT id FROM JOBS WHERE $sqlWhere", $filterSearch);
+
+			$insertJobshasFilters = array();
+			foreach ($jobsMatching as $jobMatching) {
+				$insertJobshasFilters[] = array($jobMatching['id'], $typeJ['id']);
+			}
+
+			$insertJobshasFilters = insertUpdate($connection, 'INSERT INTO JOBS_has_FILTERS (JOBS_id, FILTERS_id) VALUES (?,?)', $insertJobshasFilters);
+		}
+
+		//$i++;
+		if (isset($typesJ[$i])) {
+			echo '<meta http-equiv="Refresh" content="1; URL=/ajax.php?action=ReRunFiltersNEW&i=' . $i . '&d='.$d.'" />';
 		} else {
 			echo 'finished';
 		}
@@ -193,6 +247,14 @@ switch ($_GET['action']) {
 	case 'filterJob':
 		$jobId = (empty($_GET['jobId']) ? NULL : $_GET['jobId']);
 		$deleteJob = insertUpdate($connection, 'UPDATE JOBS SET filtered=NOW() WHERE id=?', array(array($jobId)));
+		break;
+	case 'filterJob2':
+		$jobId = (empty($_GET['jobId']) ? NULL : $_GET['jobId']);
+		$deleteJob = insertUpdate($connection, 'UPDATE JOBS SET filtered2=NOW() WHERE id=?', array(array($jobId)));
+		break;
+	case 'selectJob':
+		$jobId = (empty($_GET['jobId']) ? NULL : $_GET['jobId']);
+		$deleteJob = insertUpdate($connection, 'UPDATE JOBS SET selected=NOW() WHERE id=?', array(array($jobId)));
 		break;
 	case 'salaryFix':
 		$listJ = select($connection, "SELECT 

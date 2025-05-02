@@ -121,18 +121,15 @@ $(document).ready(function () {
 				if (element.checked) {
 					table.forEach(function (i) {
 						i.style.display = "none";
-						//i.style.width = "1px";
 					});
 				} else {
 					table.forEach(function (i) {
 						 i.style.display = "table-cell";
-						//i.style.width = "auto";
 					});
 				}
 			}, false);
 		});
 	}
-
 
 	var btnNewFilter = document.getElementById('createNewFilter');
 	if (btnNewFilter != null) {
@@ -187,10 +184,42 @@ $(document).ready(function () {
 				var httpRequest = new XMLHttpRequest();
 				httpRequest.onreadystatechange = function (data) {
 					if (httpRequest.readyState == '4' && httpRequest.status == '200') {
-						element.remove();
+						element.parentElement.parentElement.remove();
 					}
 				};
 				httpRequest.open("GET", "ajax.php?action=filterJob&jobId=" + jobId);
+				httpRequest.send();
+			}, false);
+		});
+	}
+	var btnsBanWord = document.querySelectorAll('.banJob2');
+	if (btnsBanWord.length > 0) {
+		btnsBanWord.forEach(function (element) {
+			element.addEventListener('click', function () {
+				var jobId = element.dataset.jobid;
+				var httpRequest = new XMLHttpRequest();
+				httpRequest.onreadystatechange = function (data) {
+					if (httpRequest.readyState == '4' && httpRequest.status == '200') {
+						element.parentElement.parentElement.remove();
+					}
+				};
+				httpRequest.open("GET", "ajax.php?action=filterJob2&jobId=" + jobId);
+				httpRequest.send();
+			}, false);
+		});
+	}
+	var btnsBanWord = document.querySelectorAll('.selectJob');
+	if (btnsBanWord.length > 0) {
+		btnsBanWord.forEach(function (element) {
+			element.addEventListener('click', function () {
+				var jobId = element.dataset.jobid;
+				var httpRequest = new XMLHttpRequest();
+				httpRequest.onreadystatechange = function (data) {
+					if (httpRequest.readyState == '4' && httpRequest.status == '200') {
+						element.parentElement.parentElement.remove();
+					}
+				};
+				httpRequest.open("GET", "ajax.php?action=selectJob&jobId=" + jobId);
 				httpRequest.send();
 			}, false);
 		});
@@ -287,5 +316,15 @@ $(document).ready(function () {
 			}, false);
 		});
 	}
+
+	document.querySelectorAll('#hideCols input[type="checkbox"]')[0].click();
+	document.querySelectorAll('#hideCols input[type="checkbox"]')[3].click();
+	document.querySelectorAll('#hideCols input[type="checkbox"]')[4].click();
+	document.querySelectorAll('#hideCols input[type="checkbox"]')[5].click();
+	document.querySelectorAll('#hideCols input[type="checkbox"]')[8].click();
+	document.querySelectorAll('#hideCols input[type="checkbox"]')[10].click();
+	document.querySelectorAll('#hideCols input[type="checkbox"]')[11].click();
+	document.querySelectorAll('#hideCols input[type="checkbox"]')[12].click();
+	document.querySelector('table tr th:nth-child(8)').click();
 
 });
