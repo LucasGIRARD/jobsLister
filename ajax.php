@@ -256,6 +256,11 @@ switch ($_GET['action']) {
 		$jobId = (empty($_GET['jobId']) ? NULL : $_GET['jobId']);
 		$deleteJob = insertUpdate($connection, 'UPDATE JOBS SET selected=NOW() WHERE id=?', array(array($jobId)));
 		break;
+		break;
+	case 'candidated':
+		$jobId = (empty($_GET['jobId']) ? NULL : $_GET['jobId']);
+		$deleteJob = insertUpdate($connection, 'UPDATE JOBS SET postulated=NOW() WHERE id=?', array(array($jobId)));
+		break;
 	case 'salaryFix':
 		$listJ = select($connection, "SELECT 
 			J.id, salary

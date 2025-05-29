@@ -14,61 +14,98 @@ $listJ = select($connection, "SELECT J.name
 
 $tagsSQL = select($connection, "SELECT value FROM FILTERS WHERE 1 ORDER BY value");
 
-function cb1($a) {
+function cb1($a)
+{
     return $a['value'];
 }
 
-$tags = array_map('cb1',$tagsSQL);
+$tags = array_map('cb1', $tagsSQL);
 
 $words = [];
 
-$filteringArray = ['la', 'dans', 'chez', 'du', 'de', 
-'of', 'h/f', 'f/h', '-', '/', 'with','des','h/f/d','f/h/x',
-'h/f/x','and','une','f/m','f/h/nb','m/f/x','f-h','@','et','&','en','à','as','|',' ','in','un','','a'];
+$filteringArray = [
+    'la',
+    'dans',
+    'chez',
+    'du',
+    'de',
+    'of',
+    'h/f',
+    'f/h',
+    '-',
+    '/',
+    'with',
+    'des',
+    'h/f/d',
+    'f/h/x',
+    'h/f/x',
+    'and',
+    'une',
+    'f/m',
+    'f/h/nb',
+    'm/f/x',
+    'f-h',
+    '@',
+    'et',
+    '&',
+    'en',
+    'à',
+    'as',
+    '|',
+    ' ',
+    'in',
+    'un',
+    '',
+    'a'
+];
 
-$toReplaceA = ["\n",',','.','(',')','[',']',':','·','°','d\''];
-$replacedByA = [' ','_','_','','','','','','','',''];
+$toReplaceA = ["\n", ',', '.', '(', ')', '[', ']', ':', '·', '°', 'd\''];
+$replacedByA = [' ', '_', '_', '', '', '', '', '', '', '', ''];
 
-function stripAccents($str){
+function stripAccents($str)
+{
     return strtr(utf8_decode($str), utf8_decode('àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ'), 'aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY');
-
-  }
+}
 
 if (isset($_GET['p']) && $_GET['p'] == '2') {
     foreach ($listJ as $j) {
-        $name = stripAccents(str_replace($toReplaceA,$replacedByA,strtolower($j['name'])));
-       
-        $jArray = mb_split(' ', $name);
-        foreach ($jArray as $i => $word) {
-            if ($i == 0) {
-                continue;
-            }
-            $lword =  $jArray[$i - 1];
-            $tword = $lword . ' ' . $word;
-           
-            if (in_array($tword,$tags) || in_array($lword,$filteringArray) || in_array($word,$filteringArray) ) {
-                continue;
-            }            
+        $name = stripAccents(str_replace($toReplaceA, $replacedByA, strtolower($j['name'])));
 
-            if (!isset($words[$tword])) {
-                $words[$tword] = 1;
-            } else {
-                $words[$tword]++;
+        $jArray = mb_split(' ', $name);
+        if (is_array($jArray)) {
+            foreach ($jArray as $i => $word) {
+                if ($i == 0) {
+                    continue;
+                }
+                $lword =  $jArray[$i - 1];
+                $tword = $lword . ' ' . $word;
+
+                if (in_array($tword, $tags) || in_array($lword, $filteringArray) || in_array($word, $filteringArray)) {
+                    continue;
+                }
+
+                if (!isset($words[$tword])) {
+                    $words[$tword] = 1;
+                } else {
+                    $words[$tword]++;
+                }
             }
         }
     }
 } else {
     foreach ($listJ as $j) {
-        $name = stripAccents(str_replace($toReplaceA,$replacedByA,strtolower($j['name'])));
+        $name = stripAccents(str_replace($toReplaceA, $replacedByA, strtolower($j['name'])));
         $jArray = mb_split(' ', $name);
-        foreach ($jArray as $word) {
-            if (in_array($word,$tags) || in_array($word,$filteringArray) ) {
-                continue;
-            }
-            if (!isset($words[$word])) {
-                $words[$word] = 1;
-            } else {
-                $words[$word]++;
+        if (is_array($jArray)) {
+            foreach ($jArray as $word) {
+                if (in_array($word, $tags) || in_array($word, $filteringArray)) {
+                    continue;
+                }
+                if (!isset($words[$word])) {
+                    $words[$word] = 1;
+                } else {
+                    $words[$word]++;
+                }
             }
         }
     }
@@ -97,7 +134,7 @@ arsort($words);
     <script type="text/javascript" src="/js/js.js"></script>
 </head>
 
-<body>
+<body id="tag">
     <div class="pure-g">
         <div class="pure-u-1 list">
             <button id="reRunFilters" class="pure-button pure-button-primary">reRun filters</button>

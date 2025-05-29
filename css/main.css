@@ -138,6 +138,11 @@ table tr th:nth-child(1) {
 	width: 56px;
 }
 
+#tag table tr th:nth-child(1) {
+	width: 300px;
+}
+
+
 table tr th:nth-child(2) {
 	width: 120px;
 }

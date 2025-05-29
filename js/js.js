@@ -102,7 +102,7 @@ $(document).ready(function () {
 
 	headers.on("click", function (d) {
 		clicks[d]++;
-		if (d == "number" || d == "salaryMin" || d == "salaryMax") {
+		if (d == "number" || d == "Min" || d == "Max") {
 			sortNumerically(rows, d, clicks[d] % 2 == 0);
 		} else if (d == "date") {
 			sortByDate(rows, d, clicks[d] % 2 == 0);
@@ -124,7 +124,7 @@ $(document).ready(function () {
 					});
 				} else {
 					table.forEach(function (i) {
-						 i.style.display = "table-cell";
+						i.style.display = "table-cell";
 					});
 				}
 			}, false);
@@ -175,55 +175,90 @@ $(document).ready(function () {
 			}, false);
 		});
 	}
-	
-	var btnsBanWord = document.querySelectorAll('.banJob');
-	if (btnsBanWord.length > 0) {
-		btnsBanWord.forEach(function (element) {
+
+	var btnsJob = document.querySelectorAll('.banJob, .banJob2, .selectJob, .candidatedJob');
+	if (btnsJob.length > 0) {
+		btnsJob.forEach(function (element) {
 			element.addEventListener('click', function () {
 				var jobId = element.dataset.jobid;
 				var httpRequest = new XMLHttpRequest();
+				var candidated = false;
+				var action = "";
+				if (element.classList.contains('candidatedJob')) {
+					candidated = true;
+					action = "candidated";
+				} else if (element.classList.contains('banJob')) {
+					action = "filterJob";
+				} else if (element.classList.contains('banJob2')) {
+					action = "filterJob2";
+				} else if (element.classList.contains('selectJob')) {
+					action = "selectJob";
+				} else {
+					return false;
+				}
 				httpRequest.onreadystatechange = function (data) {
 					if (httpRequest.readyState == '4' && httpRequest.status == '200') {
-						element.parentElement.parentElement.remove();
+						if (candidated) {
+							element.remove();
+						} else {
+							element.parentElement.parentElement.remove();
+						}
+
 					}
 				};
-				httpRequest.open("GET", "ajax.php?action=filterJob&jobId=" + jobId);
+				httpRequest.open("GET", "ajax.php?action=" + action + "&jobId=" + jobId);
 				httpRequest.send();
 			}, false);
 		});
 	}
-	var btnsBanWord = document.querySelectorAll('.banJob2');
-	if (btnsBanWord.length > 0) {
-		btnsBanWord.forEach(function (element) {
-			element.addEventListener('click', function () {
-				var jobId = element.dataset.jobid;
-				var httpRequest = new XMLHttpRequest();
-				httpRequest.onreadystatechange = function (data) {
-					if (httpRequest.readyState == '4' && httpRequest.status == '200') {
-						element.parentElement.parentElement.remove();
-					}
-				};
-				httpRequest.open("GET", "ajax.php?action=filterJob2&jobId=" + jobId);
-				httpRequest.send();
-			}, false);
-		});
-	}
-	var btnsBanWord = document.querySelectorAll('.selectJob');
-	if (btnsBanWord.length > 0) {
-		btnsBanWord.forEach(function (element) {
-			element.addEventListener('click', function () {
-				var jobId = element.dataset.jobid;
-				var httpRequest = new XMLHttpRequest();
-				httpRequest.onreadystatechange = function (data) {
-					if (httpRequest.readyState == '4' && httpRequest.status == '200') {
-						element.parentElement.parentElement.remove();
-					}
-				};
-				httpRequest.open("GET", "ajax.php?action=selectJob&jobId=" + jobId);
-				httpRequest.send();
-			}, false);
-		});
-	}
+	// var btnsBanWord = document.querySelectorAll('.banJob');
+	// if (btnsBanWord.length > 0) {
+	// 	btnsBanWord.forEach(function (element) {
+	// 		element.addEventListener('click', function () {
+	// 			var jobId = element.dataset.jobid;
+	// 			var httpRequest = new XMLHttpRequest();
+	// 			httpRequest.onreadystatechange = function (data) {
+	// 				if (httpRequest.readyState == '4' && httpRequest.status == '200') {
+	// 					element.parentElement.parentElement.remove();
+	// 				}
+	// 			};
+	// 			httpRequest.open("GET", "ajax.php?action=filterJob&jobId=" + jobId);
+	// 			httpRequest.send();
+	// 		}, false);
+	// 	});
+	// }
+	// var btnsBanWord = document.querySelectorAll('.banJob2');
+	// if (btnsBanWord.length > 0) {
+	// 	btnsBanWord.forEach(function (element) {
+	// 		element.addEventListener('click', function () {
+	// 			var jobId = element.dataset.jobid;
+	// 			var httpRequest = new XMLHttpRequest();
+	// 			httpRequest.onreadystatechange = function (data) {
+	// 				if (httpRequest.readyState == '4' && httpRequest.status == '200') {
+	// 					element.parentElement.parentElement.remove();
+	// 				}
+	// 			};
+	// 			httpRequest.open("GET", "ajax.php?action=filterJob2&jobId=" + jobId);
+	// 			httpRequest.send();
+	// 		}, false);
+	// 	});
+	// }
+	// var btnsBanWord = document.querySelectorAll('.selectJob');
+	// if (btnsBanWord.length > 0) {
+	// 	btnsBanWord.forEach(function (element) {
+	// 		element.addEventListener('click', function () {
+	// 			var jobId = element.dataset.jobid;
+	// 			var httpRequest = new XMLHttpRequest();
+	// 			httpRequest.onreadystatechange = function (data) {
+	// 				if (httpRequest.readyState == '4' && httpRequest.status == '200') {
+	// 					element.parentElement.parentElement.remove();
+	// 				}
+	// 			};
+	// 			httpRequest.open("GET", "ajax.php?action=selectJob&jobId=" + jobId);
+	// 			httpRequest.send();
+	// 		}, false);
+	// 	});
+	// }
 	var btnsBanWord = document.querySelectorAll('.safeWord');
 	if (btnsBanWord.length > 0) {
 		btnsBanWord.forEach(function (element) {
@@ -249,7 +284,7 @@ $(document).ready(function () {
 				var httpRequest = new XMLHttpRequest();
 				httpRequest.onreadystatechange = function (data) {
 					if (httpRequest.readyState == '4' && httpRequest.status == '200') {
-						
+
 					}
 				};
 				httpRequest.open("GET", "ajax.php?action=esnSociete&id=" + id + "&esn=" + esn);
@@ -257,25 +292,25 @@ $(document).ready(function () {
 			}, false);
 		});
 	}
-	
-	if (document.querySelector('#scrollArea') != null) {
+
+	if (document.querySelector('#scrollArea') != null && document.querySelector("body").id != "s") {
 		var actualHash = location.hash;
-		var bottomMargin = document.querySelector("#scrollArea").offsetHeight -150;
+		var bottomMargin = document.querySelector("#scrollArea").offsetHeight - 36 - 150;
 		var options = {
 			root: document.querySelector("#scrollArea"),
-			rootMargin: "-70px 0px -"+bottomMargin+"px 0px", //(top, right, bottom, left)
+			rootMargin: "0px 0px -" + bottomMargin + "px 0px", //(top, right, bottom, left)
 			threshold: 1.0,
-		  };
+		};
 
-		  var callback = function (entries, observer) {
+		var callback = function (entries, observer) {
 			entries.forEach((entry) => {
 				if (entry.isIntersecting) {
 					actualHash = entry.target.id;
 					console.log(entry.target.id);
-				}			 
+				}
 			});
-		  };
-		  
+		};
+
 		var observer = new IntersectionObserver(callback, options);
 
 		document.querySelectorAll("#scrollArea tbody tr").forEach((i) => {
@@ -284,7 +319,7 @@ $(document).ready(function () {
 			}
 		});
 
-		
+
 
 		document.querySelector('#scrollArea').addEventListener('scrollend', function () {
 			location.hash = actualHash;
@@ -316,15 +351,17 @@ $(document).ready(function () {
 			}, false);
 		});
 	}
-
-	document.querySelectorAll('#hideCols input[type="checkbox"]')[0].click();
-	document.querySelectorAll('#hideCols input[type="checkbox"]')[3].click();
-	document.querySelectorAll('#hideCols input[type="checkbox"]')[4].click();
-	document.querySelectorAll('#hideCols input[type="checkbox"]')[5].click();
-	document.querySelectorAll('#hideCols input[type="checkbox"]')[8].click();
-	document.querySelectorAll('#hideCols input[type="checkbox"]')[10].click();
-	document.querySelectorAll('#hideCols input[type="checkbox"]')[11].click();
-	document.querySelectorAll('#hideCols input[type="checkbox"]')[12].click();
-	document.querySelector('table tr th:nth-child(8)').click();
-
+	if (document.querySelectorAll('#hideCols input[type="checkbox"]').length > 0) {
+		document.querySelectorAll('#hideCols input[type="checkbox"]')[0].click();
+		document.querySelectorAll('#hideCols input[type="checkbox"]')[3].click();
+		document.querySelectorAll('#hideCols input[type="checkbox"]')[4].click();
+		document.querySelectorAll('#hideCols input[type="checkbox"]')[5].click();
+		document.querySelectorAll('#hideCols input[type="checkbox"]')[8].click();
+		if (document.querySelector("body").id != "s") {
+			document.querySelectorAll('#hideCols input[type="checkbox"]')[10].click();
+			document.querySelectorAll('#hideCols input[type="checkbox"]')[11].click();
+		}
+		document.querySelectorAll('#hideCols input[type="checkbox"]')[12].click();
+		document.querySelector('table tr th:nth-child(8)').click();
+	}
 });
