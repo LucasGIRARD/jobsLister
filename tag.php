@@ -137,7 +137,6 @@ arsort($words);
 <body id="tag">
     <div class="pure-g">
         <div class="pure-u-1 list">
-            <button id="reRunFilters" class="pure-button pure-button-primary">reRun filters</button>
             <div id="scrollArea" class="clusterize-scroll">
                 <table class="pure-table pure-table-striped">
                     <thead>

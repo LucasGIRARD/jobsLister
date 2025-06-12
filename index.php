@@ -1,25 +1,36 @@
 <?php
-$bodyClass = "";
-
 include 'SQL.php';
 
-$connection = openSQLConnexion();
+$bodyClass = "";
 $type = NULL;
+
+$where = array();
+$select = array();
+$join = array();
+$group = "";
+
+
+$connection = openSQLConnexion();
+
+/*
+$_GET['type'] = filterid
+$_GET['w'] = word to search
+$_GET['m'] = merge jobs		
+$_GET['s'] = selected	
+$_GET['min'] = minimum salary
+$_GET['f2'] = filtered2
+$_GET['p'] = postulated
+
+*/
+
 if (isset($_GET['type'])) {
 	$type = $_GET['type'];
 
-	$listJ = select($connection, "SELECT 
-	J.id, C.name as companie, J.name, localisation, salary, candidats, filtered, postulated, refused, searched, 
-	link, S.name AS source
-	FROM JOBS_has_FILTERS AS JhF
-	LEFT JOIN JOBS AS J ON J.id = JhF.JOBS_id
-	LEFT JOIN COMPANIES AS C ON C.id = J.COMPANIES_id 
-	LEFT JOIN SOURCES_has_JOBS AS ShJ ON ShJ.JOBS_id = J.id 
-	LEFT JOIN SOURCES AS S ON S.id = ShJ.SOURCES_id 
-	WHERE JhF.FILTERS_id = ?
-	ORDER BY C.name, J.name, S.name
-	", array($type));
-} else if (isset($_GET['w'])) {
+	$where[] = "JhF.FILTERS_id = ?";
+	$data = array($type);
+}
+
+if (isset($_GET['w'])) {
 	$before = array('% ', '%-', '%\'', '%/', '%,', '%(', '');
 	$after = array(' %', '-%', '%\'', '/%', ',%', ')%', '');
 	$filterSearch = array();
@@ -29,79 +40,90 @@ if (isset($_GET['type'])) {
 		}
 	}
 
-	$sqlWhere = 'J.name like ?';
+	$whereOR = 'J.name LIKE ?';
 	for ($i = 1; $i < count($filterSearch); $i++) {
-		$sqlWhere .= 'or J.name like ?';
+		$whereOR .= 'OR J.name LIKE ?';
 	}
 
-	$listJ = select($connection, "SELECT 
-	J.id, C.name as companie, J.name, localisation, salary, salaryMin, salaryMax, candidats, filtered, postulated, refused, searched, 
-	link, S.name AS source
-	FROM JOBS AS J 
-	LEFT JOIN COMPANIES AS C ON C.id = J.COMPANIES_id 
-	LEFT JOIN SOURCES_has_JOBS AS ShJ ON ShJ.JOBS_id = J.id 
-	LEFT JOIN SOURCES AS S ON S.id = ShJ.SOURCES_id 
-	WHERE $sqlWhere
-	ORDER BY C.name, J.name, S.name
-	", $filterSearch);
-} else if (isset($_GET['s'])) {
+	$where[] = '(' . $whereOR . ')';
+
+	$data = $filterSearch;
+}
+
+if (isset($_GET['s'])) {
+	$where[] = "selected IS NOT NULL";
+	$where[] = "postulated IS NULL";
 	$bodyClass = "s";
-	$listJ = select($connection, "SELECT 
-	J.id, C.name as companie, J.name, localisation, salary, salaryMin, salaryMax, candidats, filtered, postulated, refused, searched, 
-	group_concat(link SEPARATOR '|') AS link,group_concat(S.name SEPARATOR '<br>') AS source
-	FROM JOBS AS J 
-	LEFT JOIN  JOBS_has_FILTERS AS JhF ON JhF.JOBS_id = J.id
-	LEFT JOIN COMPANIES AS C ON C.id = J.COMPANIES_id 
-	LEFT JOIN SOURCES_has_JOBS AS ShJ ON ShJ.JOBS_id = J.id 
-	LEFT JOIN SOURCES AS S ON S.id = ShJ.SOURCES_id 
-	WHERE JhF.id IS NULL and expired IS NULL and filtered is null and filtered2 is null and selected is not null
-	GROUP BY J.id
-	ORDER BY C.name, J.name
-	");
-} else if (isset($_GET['m'])) {
-	$listJ = select($connection, "SELECT 
-	J.id, C.name as companie, J.name, J.localisation, J.salary, J.candidats, J.filtered, J.postulated, J.refused, J.searched, 
-	SJ.link, S.name AS source, 
-	J2.id as id2, J2.localisation as localisation2, J2.salary as salary2, J2.searched as searched2, SJ2.link as link2
-	FROM JOBS AS J 
-	LEFT JOIN  JOBS_has_FILTERS AS JhF ON JhF.JOBS_id = J.id
-	LEFT JOIN COMPANIES AS C ON C.id = J.COMPANIES_id
-	LEFT JOIN SOURCES_has_JOBS AS SJ ON SJ.JOBS_id = J.id
-	LEFT JOIN SOURCES AS S ON S.id = SJ.SOURCES_id
-	LEFT JOIN JOBS as J2 ON J.COMPANIES_id = J2.COMPANIES_id AND J.name = J2.name AND J.id <> J2.id 
-	LEFT JOIN SOURCES_has_JOBS AS SJ2 ON SJ2.JOBS_id = J2.id
-	WHERE J2.id is not null
-	ORDER BY C.name, J.name, S.name
-	");
-
-	//JhF.id IS NULL
-
-} else if (isset($_GET['min'])) {
-	$listJ = select($connection, "SELECT 
-	J.id, C.name as companie, J.name, localisation, salary, salaryMin, salaryMax, candidats, filtered, postulated, refused, searched, 
-	group_concat(link SEPARATOR '|') AS link,group_concat(S.name SEPARATOR '<br>') AS source
-	FROM JOBS AS J 
-	LEFT JOIN  JOBS_has_FILTERS AS JhF ON JhF.JOBS_id = J.id
-	LEFT JOIN COMPANIES AS C ON C.id = J.COMPANIES_id 
-	LEFT JOIN SOURCES_has_JOBS AS ShJ ON ShJ.JOBS_id = J.id 
-	LEFT JOIN SOURCES AS S ON S.id = ShJ.SOURCES_id 
-	WHERE JhF.id IS NULL and expired IS NULL and filtered is null and filtered2 is null and selected is null and salaryMin > ".$_GET['min']."000 OR salaryMax > ".$_GET['min']."000
-	GROUP BY J.id
-	ORDER BY C.name, J.name
-	");
 } else {
-	$listJ = select($connection, "SELECT 
-	J.id, C.name as companie, J.name, localisation, salary, salaryMin, salaryMax, candidats, filtered, postulated, refused, searched, 
-	group_concat(link SEPARATOR '|') AS link,group_concat(S.name SEPARATOR '<br>') AS source
+	if (!isset($_GET['p'])) {
+		$where[] = "selected IS NULL";
+	}
+}
+
+
+if (isset($_GET['m'])) {
+	$select[] = "J2.id AS id2";
+	$select[] = "J2.localisation AS localisation2";
+	$select[] = "J2.salary AS salary2";
+	$select[] = "J2.searched AS searched2";
+	$select[] = "SJ2.link AS link2";
+
+	$join[] = "LEFT JOIN JOBS AS J2 ON J.COMPANIES_id = J2.COMPANIES_id AND J.name = J2.name AND J.id <> J2.id ";
+	$join[] = "LEFT JOIN SOURCES_has_JOBS AS SJ2 ON SJ2.JOBS_id = J2.id ";
+	$where[] = "J2.id IS NOT NULL";
+}
+
+
+if (isset($_GET['min'])) {
+	if ($_GET['min'] == "*") {
+		$where[] = "salaryMin IS NULL AND salaryMax IS NULL";
+	} else {
+		$where[] = "(salaryMin > " . $_GET['min'] . "000 OR salaryMax > " . $_GET['min'] . "000)";
+	}
+}
+
+if (!isset($_GET['m']) && !isset($_GET['type'])) {
+	$select[] = "group_concat(ShJ.link SEPARATOR '|') AS link";
+	$select[] = "group_concat(S.name SEPARATOR '<br>') AS source";
+	$group = "GROUP BY J.id";
+} else {
+	$select[] = "ShJ.link";
+	$select[] = "S.name AS source";
+}
+
+if (isset($_GET['f2'])) {
+	$where[] = "filtered2 IS NOT NULL";
+	$bodyClass = "f2";
+} else {
+	$where[] = "filtered2 IS NULL";
+}
+
+if (isset($_GET['p'])) {
+	$where[] = "postulated IS NOT NULL";
+	$bodyClass = "p";
+} else {
+	$where[] = "postulated IS NULL";
+}
+
+$sql = "SELECT 
+	J.id, C.name as companie, J.name, J.localisation, J.salary, J.salaryMin, 
+	J.salaryMax, J.candidats, J.filtered, J.postulated, J.refused, J.searched, J.imported 
+	" . (!empty($select) ? ',' : '') . implode(", ", $select) . "
 	FROM JOBS AS J 
-	LEFT JOIN  JOBS_has_FILTERS AS JhF ON JhF.JOBS_id = J.id
+	LEFT JOIN JOBS_has_FILTERS AS JhF ON JhF.JOBS_id = J.id 
 	LEFT JOIN COMPANIES AS C ON C.id = J.COMPANIES_id 
 	LEFT JOIN SOURCES_has_JOBS AS ShJ ON ShJ.JOBS_id = J.id 
 	LEFT JOIN SOURCES AS S ON S.id = ShJ.SOURCES_id 
-	WHERE JhF.id IS NULL and expired IS NULL and filtered is null and filtered2 is null and selected is null
-	GROUP BY J.id
-	ORDER BY C.name, J.name
-	");
+	" . implode(" ", $join) . "
+	WHERE JhF.id IS NULL AND expired IS NULL AND filtered IS NULL " . (!empty($where) ? ' AND ' : '') . implode(" AND ", $where) . "
+	" . $group . "
+	ORDER BY C.name, J.name";
+
+
+if (isset($data) && !empty($data)) {
+	$listJ = select($connection, $sql, $data);
+} else {
+	$listJ = select($connection, $sql);
 }
 
 $typeJ = select($connection, "SELECT id, value FROM FILTERS WHERE safe=0 ORDER BY value");
@@ -158,6 +180,12 @@ $typeJ = select($connection, "SELECT id, value FROM FILTERS WHERE safe=0 ORDER B
 										<a target="_blank" href="/ajax.php?action=ReRunFilters" class="pure-menu-link">ReRunFilters</a>
 									</li>
 									<li class="pure-menu-item">
+										<a target="_blank" href="/ajax.php?action=salaryFix" class="pure-menu-link">salaryFix</a>
+									</li>
+									<li class="pure-menu-item">
+										<a target="_blank" href="/ajax.php?action=mergeJob" class="pure-menu-link">mergeJob</a>
+									</li>
+									<li class="pure-menu-item">
 										<a target="_blank" href="/ajax.php?action=dedoubleSociete" class="pure-menu-link">dedoubleSociete</a>
 									</li>
 									<li class="pure-menu-item">
@@ -171,7 +199,7 @@ $typeJ = select($connection, "SELECT id, value FROM FILTERS WHERE safe=0 ORDER B
 						</ul>
 					</li>
 				</ul>
-				
+
 				<select name="typeJ" id="typeJ">
 					<option></option>
 					<?php
@@ -182,7 +210,7 @@ $typeJ = select($connection, "SELECT id, value FROM FILTERS WHERE safe=0 ORDER B
 					}
 					?>
 				</select>
-				<label for="newFilter">Add filter</label>	
+				<label for="newFilter">Add filter</label>
 				<input type="text" name="newFilter" id="newFilter" class="">
 				<button id="createNewFilter" class="pure-button pure-button-primary">create</button>
 
@@ -195,7 +223,7 @@ $typeJ = select($connection, "SELECT id, value FROM FILTERS WHERE safe=0 ORDER B
 						<a href="#" class="pure-menu-link">Hide Cols</a>
 						<ul class="pure-menu-children">
 							<?php
-							$cols = array('id', 'companie', 'name', 'source', 'localisation', 'salary', 'salaryMin', 'salaryMax', 'candidats', 'filtered', 'postulated', 'refused', 'searched', 'link');
+							$cols = array('id', 'imported', 'companie', 'name', 'source', 'localisation', 'salary', 'salaryMin', 'salaryMax', 'candidats', 'filtered', 'postulated', 'refused', 'searched', 'link');
 							$i = 1;
 							foreach ($cols as $col) {
 								echo '<li class="pure-menu-item"><input type="checkbox" name="hide-' . $col . '" id="hide-' . $col . '" data-col="' . $i . '" value="1"><label for="hide-' . $col . '">' . $col . '</label></li>';
@@ -207,16 +235,17 @@ $typeJ = select($connection, "SELECT id, value FROM FILTERS WHERE safe=0 ORDER B
 				</ul>
 				<span id="responseAjax"></span>
 				<!--
-				<div style="text-align: right;display: inline-block;width: calc(100% - 855px);height: 30px">
-				<input type="checkbox" name="viewed_all" id="viewed_all" style="top: 9px;right: 9px;position: relative;">
-				</div>
-				-->
+<div style="text-align: right;display: inline-block;width: calc(100% - 855px);height: 30px">
+<input type="checkbox" name="viewed_all" id="viewed_all" style="top: 9px;right: 9px;position: relative;">
+</div>
+-->
 			</nav>
 			<div id="scrollArea" class="clusterize-scroll">
 				<table class="pure-table pure-table-striped">
 					<thead>
 						<tr>
 							<th>id</th>
+							<th>imported</th>
 							<th>companie</th>
 							<th>name</th>
 							<th>source</th>
@@ -250,6 +279,7 @@ $typeJ = select($connection, "SELECT id, value FROM FILTERS WHERE safe=0 ORDER B
 							}
 							echo '<tr id="row-' . $j['id'] . '">
 								<td>' . $j['id'] . '</td>
+								<td>' . $j['imported'] . '</td>
 								<td>' . $j['companie'] . '</td>
 								<td>' . (isset($_GET['w']) ? str_ireplace($_GET['w'], '<span style="background-color:gold;">' . $_GET['w'] . '</span>', $j['name']) : $j['name']) . '</td>
 								<td>' . $j['source'] . '</td>
@@ -258,13 +288,13 @@ $typeJ = select($connection, "SELECT id, value FROM FILTERS WHERE safe=0 ORDER B
 								<td>' . $j['salaryMin'] . '</td>
 								<td>' . $j['salaryMax'] . '</td>
 								<td>' . $j['candidats'] . '</td>
-								<td>' . (!empty($j['filtered']) ? $j['filtered'] : '<button class="banJob pure-button button-error" data-jobid="' . $j['id'] . '">filter</button>').' <button class="banJob2 pure-button button-warning" data-jobid="' . $j['id'] . '">filter2</button> <button class="selectJob pure-button button-success" data-jobid="' . $j['id'] . '">select</button></td>
-								<td>' . $j['postulated'] . (empty( $j['postulated'])?'<button class="candidatedJob pure-button button-success" data-jobid="' . $j['id'] . '">candidated</button>':'') . '</td>
+								<td>' . (!empty($j['filtered']) ? $j['filtered'] : '<button class="banJob pure-button button-error" data-jobid="' . $j['id'] . '">filter</button>') . ' <button class="banJob2 pure-button button-warning" data-jobid="' . $j['id'] . '">filter2</button> <button class="selectJob pure-button button-success" data-jobid="' . $j['id'] . '">select</button></td>
+								<td>' . $j['postulated'] . (empty($j['postulated']) ? '<button class="candidatedJob pure-button button-success" data-jobid="' . $j['id'] . '">candidated</button>' : '') . '</td>
 								<td>' . $j['refused'] . '</td>
 								<td>' . $j['searched'] . (isset($_GET['m']) && !empty($j['searched2']) && $j['searched'] != $j['searched2'] ? '<br>' . $j['searched2'] : '') . '</td>
-								<td><a target="_blank" href="' . $j['link'] . '" class="pure-menu-link">'.$sArray[0].'</a>
-								' . (isset($j['link2']) && !empty($j['link2']) && $j['link'] != $j['link2'] ? '<br><a target="_blank" href="' . $j['link2'] . '" class="pure-menu-link">'.$sArray[1].'</a>' : '') . '
-								' . (isset($j['link3']) && !empty($j['link3']) && $j['link'] != $j['link3'] ? '<br><a target="_blank" href="' . $j['link3'] . '" class="pure-menu-link">'.$sArray[2].'</a>' : '') . '</td>
+								<td><a target="_blank" href="' . $j['link'] . '" class="pure-menu-link">' . $sArray[0] . '</a>
+								' . (isset($j['link2']) && !empty($j['link2']) && $j['link'] != $j['link2'] ? '<br><a target="_blank" href="' . $j['link2'] . '" class="pure-menu-link">' . $sArray[1] . '</a>' : '') . '
+								' . (isset($j['link3']) && !empty($j['link3']) && $j['link'] != $j['link3'] ? '<br><a target="_blank" href="' . $j['link3'] . '" class="pure-menu-link">' . $sArray[2] . '</a>' : '') . '</td>
 								</tr>';
 							if (isset($_GET['m'])) {
 								$listed[] = $j['id2'];
@@ -272,16 +302,16 @@ $typeJ = select($connection, "SELECT id, value FROM FILTERS WHERE safe=0 ORDER B
 
 
 							/*
-							$html = '<tr><td hidden>'.$value['idYT'].'</td>';
-							$html .= '<td><span title="'.$value['dateCreation'].'">'.mb_substr($value['dateCreation'],0,4).'</span></td>';
-							if (!isset($_GET['chaine'])) {
-							$html .= '<td id="'.$value['CHAINE_id'].'">'.$chaines[$value['CHAINE_id']].'</td>';
-							}
-
-							$html .= '<td class="title">'.$value['nom'].'</td>';
-							$html .= '<td><input type="checkbox" name="viewed_'.$value['id'].'"></td>';
-							$html .= '</tr>';
-							*/
+	$html = '<tr><td hidden>'.$value['idYT'].'</td>';
+	$html .= '<td><span title="'.$value['dateCreation'].'">'.mb_substr($value['dateCreation'],0,4).'</span></td>';
+	if (!isset($_GET['chaine'])) {
+	$html .= '<td id="'.$value['CHAINE_id'].'">'.$chaines[$value['CHAINE_id']].'</td>';
+	}
+	
+	$html .= '<td class="title">'.$value['nom'].'</td>';
+	$html .= '<td><input type="checkbox" name="viewed_'.$value['id'].'"></td>';
+	$html .= '</tr>';
+	*/
 						}
 						?>
 					</tbody>
