@@ -238,7 +238,7 @@ switch ($_GET['action']) {
 					$search = ' \n ' . $j['search2'];
 				}
 
-				insertUpdate($connection, 'UPDATE JOBS SET localisation=?, salary=?, searched=? WHERE id=?', array(array($loc, $sal, $search, $j['id'])));
+				insertUpdate($connection, 'UPDATE JOBS SET localisation=?, salary=?, searched=?, expired=NULL WHERE id=?', array(array($loc, $sal, $search, $j['id'])));
 				insertUpdate($connection, 'UPDATE SOURCES_has_JOBS SET JOBS_id=? WHERE id=?', array(array($j['id'], $j['SJ2id'])));
 				insertUpdate($connection, 'DELETE FROM JOBS WHERE id=?', array(array($j['id2'])));
 			}
