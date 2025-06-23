@@ -100,6 +100,7 @@ if (isset($_GET['f2'])) {
 
 if (isset($_GET['p'])) {
 	$where[] = "postulated IS NOT NULL";
+	$where[] = "refused IS NULL";
 	$bodyClass = "p";
 } else {
 	$where[] = "postulated IS NULL";
@@ -160,6 +161,9 @@ $typeJ = select($connection, "SELECT id, value FROM FILTERS WHERE safe=0 ORDER B
 							</li>
 							<li class="pure-menu-item">
 								<a href="/?s=1" class="pure-menu-link">selected list</a>
+							</li>
+							<li class="pure-menu-item">
+								<a href="/?p=1" class="pure-menu-link">postulated list</a>
 							</li>
 							<li class="pure-menu-item">
 								<a href="/?f2=1" class="pure-menu-link">filtered2 list</a>
@@ -290,7 +294,7 @@ $typeJ = select($connection, "SELECT id, value FROM FILTERS WHERE safe=0 ORDER B
 								<td>' . $j['candidats'] . '</td>
 								<td>' . (!empty($j['filtered']) ? $j['filtered'] : '<button class="banJob pure-button button-error" data-jobid="' . $j['id'] . '">filter</button>') . ' <button class="banJob2 pure-button button-warning" data-jobid="' . $j['id'] . '">filter2</button> <button class="selectJob pure-button button-success" data-jobid="' . $j['id'] . '">select</button></td>
 								<td>' . $j['postulated'] . (empty($j['postulated']) ? '<button class="candidatedJob pure-button button-success" data-jobid="' . $j['id'] . '">candidated</button>' : '') . '</td>
-								<td>' . $j['refused'] . '</td>
+								<td>' . $j['refused']. (empty($j['refused']) ? '<button class="refusedJob pure-button button-error" data-jobid="' . $j['id'] . '">refused</button>' : '') . '</td>
 								<td>' . $j['searched'] . (isset($_GET['m']) && !empty($j['searched2']) && $j['searched'] != $j['searched2'] ? '<br>' . $j['searched2'] : '') . '</td>
 								<td><a target="_blank" href="' . $j['link'] . '" class="pure-menu-link">' . $sArray[0] . '</a>
 								' . (isset($j['link2']) && !empty($j['link2']) && $j['link'] != $j['link2'] ? '<br><a target="_blank" href="' . $j['link2'] . '" class="pure-menu-link">' . $sArray[1] . '</a>' : '') . '

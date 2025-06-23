@@ -176,7 +176,7 @@ $(document).ready(function () {
 		});
 	}
 
-	var btnsJob = document.querySelectorAll('.banJob, .banJob2, .selectJob, .candidatedJob');
+	var btnsJob = document.querySelectorAll('.banJob, .banJob2, .selectJob, .candidatedJob, .refusedJob');
 	if (btnsJob.length > 0) {
 		btnsJob.forEach(function (element) {
 			element.addEventListener('click', function () {
@@ -187,6 +187,8 @@ $(document).ready(function () {
 				if (element.classList.contains('candidatedJob')) {
 					candidated = true;
 					action = "candidated";
+				} else if (element.classList.contains('refusedJob')) {
+					action = "refused";
 				} else if (element.classList.contains('banJob')) {
 					action = "filterJob";
 				} else if (element.classList.contains('banJob2')) {
