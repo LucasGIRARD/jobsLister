@@ -265,6 +265,10 @@ switch ($_GET['action']) {
 		$jobId = (empty($_GET['jobId']) ? NULL : $_GET['jobId']);
 		$deleteJob = insertUpdate($connection, 'UPDATE JOBS SET refused=NOW() WHERE id=?', array(array($jobId)));
 		break;
+	case 'expired':
+		$ShJId = (empty($_GET['ShJId']) ? NULL : $_GET['ShJId']);
+		$deleteJob = insertUpdate($connection, 'UPDATE SOURCES_has_JOBS SET expired=NOW() WHERE id=?', array(array($ShJId)));
+		break;
 	case 'salaryFix':
 		$listJ = select($connection, "SELECT 
 			J.id, salary

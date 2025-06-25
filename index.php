@@ -76,7 +76,7 @@ if (isset($_GET['m'])) {
 
 if (isset($_GET['min'])) {
 	if ($_GET['min'] == "*") {
-		$where[] = "salaryMin IS NULL AND salaryMax IS NULL";
+		$where[] = "(salaryMin IS NOT NULL OR salaryMax IS NOT NULL)";
 	} else {
 		$where[] = "(salaryMin > " . $_GET['min'] . "000 OR salaryMax > " . $_GET['min'] . "000)";
 	}
@@ -84,6 +84,7 @@ if (isset($_GET['min'])) {
 
 if (!isset($_GET['m']) && !isset($_GET['type'])) {
 	$select[] = "group_concat(ShJ.link SEPARATOR '|') AS link";
+	$select[] = "group_concat(ShJ.id SEPARATOR '|') AS ShJId";
 	$select[] = "group_concat(S.name SEPARATOR '<br>') AS source";
 	$group = "GROUP BY J.id";
 } else {
@@ -274,12 +275,16 @@ $typeJ = select($connection, "SELECT id, value FROM FILTERS WHERE safe=0 ORDER B
 								continue;
 							}
 							$linkE = explode('|', $j['link']);
+							$ShJIdE = explode('|', $j['ShJId']);
 							if (count($linkE) > 1) {
 								if (count($linkE) > 2) {
 									$j['link3'] = $linkE[2];
+									$j['ShJId3'] = $ShJIdE[2];
 								}
 								$j['link2'] = $linkE[1];
+								$j['ShJId2'] = $ShJIdE[1];
 								$j['link'] = $linkE[0];
+								$j['ShJId'] = $ShJIdE[0];
 							}
 							echo '<tr id="row-' . $j['id'] . '">
 								<td>' . $j['id'] . '</td>
@@ -296,9 +301,9 @@ $typeJ = select($connection, "SELECT id, value FROM FILTERS WHERE safe=0 ORDER B
 								<td>' . $j['postulated'] . (empty($j['postulated']) ? '<button class="candidatedJob pure-button button-success" data-jobid="' . $j['id'] . '">candidated</button>' : '') . '</td>
 								<td>' . $j['refused']. (empty($j['refused']) ? '<button class="refusedJob pure-button button-error" data-jobid="' . $j['id'] . '">refused</button>' : '') . '</td>
 								<td>' . $j['searched'] . (isset($_GET['m']) && !empty($j['searched2']) && $j['searched'] != $j['searched2'] ? '<br>' . $j['searched2'] : '') . '</td>
-								<td><a target="_blank" href="' . $j['link'] . '" class="pure-menu-link">' . $sArray[0] . '</a>
-								' . (isset($j['link2']) && !empty($j['link2']) && $j['link'] != $j['link2'] ? '<br><a target="_blank" href="' . $j['link2'] . '" class="pure-menu-link">' . $sArray[1] . '</a>' : '') . '
-								' . (isset($j['link3']) && !empty($j['link3']) && $j['link'] != $j['link3'] ? '<br><a target="_blank" href="' . $j['link3'] . '" class="pure-menu-link">' . $sArray[2] . '</a>' : '') . '</td>
+								<td><a target="_blank" href="' . $j['link'] . '" class="pure-menu-link">' . $sArray[0] . '</a> '.(!empty($j['ShJId']) ? '<button class="expiredJob pure-button button-error" data-ShJId="' . $j['ShJId'] . '">expired</button>' : '').' 
+								' . (isset($j['link2']) && !empty($j['link2']) && $j['link'] != $j['link2'] ? '<br><a target="_blank" href="' . $j['link2'] . '" class="pure-menu-link">' . $sArray[1] . '</a>' : '') . (!empty($j['ShJId2']) ? '<button class="expiredJob pure-button button-error" data-ShJId="' . $j['ShJId2'] . '">expired</button>' : '').'
+								' . (isset($j['link3']) && !empty($j['link3']) && $j['link'] != $j['link3'] ? '<br><a target="_blank" href="' . $j['link3'] . '" class="pure-menu-link">' . $sArray[2] . '</a>' : '') . (!empty($j['ShJId3']) ? '<button class="expiredJob pure-button button-error" data-ShJId="' . $j['ShJId3'] . '">expired</button>' : '').'</td>
 								</tr>';
 							if (isset($_GET['m'])) {
 								$listed[] = $j['id2'];

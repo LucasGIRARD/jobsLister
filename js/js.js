@@ -213,7 +213,37 @@ $(document).ready(function () {
 			}, false);
 		});
 	}
-	
+
+	var btnsJob = document.querySelectorAll('.expiredJob');
+	if (btnsJob.length > 0) {
+		btnsJob.forEach(function (element) {
+			element.addEventListener('click', function () {
+				var ShJId = element.dataset.shjid;
+				var httpRequest = new XMLHttpRequest();
+				var candidated = false;
+				var action = "";
+				if (element.classList.contains('expiredJob')) {
+					candidated = false;
+					action = "expired";
+				} else {
+					return false;
+				}
+				httpRequest.onreadystatechange = function (data) {
+					if (httpRequest.readyState == '4' && httpRequest.status == '200') {
+						if (candidated) {
+							element.remove();
+						} else {
+							element.parentElement.parentElement.remove();
+						}
+
+					}
+				};
+				httpRequest.open("GET", "ajax.php?action=" + action + "&ShJId=" + ShJId);
+				httpRequest.send();
+			}, false);
+		});
+	}
+
 	var btnsBanWord = document.querySelectorAll('.safeWord');
 	if (btnsBanWord.length > 0) {
 		btnsBanWord.forEach(function (element) {
@@ -261,7 +291,6 @@ $(document).ready(function () {
 			entries.forEach((entry) => {
 				if (entry.isIntersecting) {
 					actualHash = entry.target.id;
-					console.log(entry.target.id);
 				}
 			});
 		};
@@ -274,10 +303,12 @@ $(document).ready(function () {
 			}
 		});
 
-
+		setHashTimeout = '';
 
 		document.querySelector('#scrollArea').addEventListener('scrollend', function () {
-			location.hash = actualHash;
+			setHashTimeout = setTimeout(function () {
+				location.hash = actualHash;
+			}, 1000);
 		});
 	}
 
@@ -318,6 +349,6 @@ $(document).ready(function () {
 			document.querySelectorAll('#hideCols input[type="checkbox"]')[12].click();
 		}
 		document.querySelectorAll('#hideCols input[type="checkbox"]')[13].click();
-		document.querySelector('table tr th:nth-child(8)').click();
+		document.querySelector('table tr th:nth-child(9)').click();
 	}
 });
