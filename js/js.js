@@ -339,7 +339,7 @@ $(document).ready(function () {
 	}
 	if (document.querySelectorAll('#hideCols input[type="checkbox"]').length > 0) {
 		document.querySelectorAll('#hideCols input[type="checkbox"]')[0].click();
-		document.querySelectorAll('#hideCols input[type="checkbox"]')[1].click();
+		//document.querySelectorAll('#hideCols input[type="checkbox"]')[1].click();
 		document.querySelectorAll('#hideCols input[type="checkbox"]')[4].click();
 		document.querySelectorAll('#hideCols input[type="checkbox"]')[5].click();
 		document.querySelectorAll('#hideCols input[type="checkbox"]')[6].click();
@@ -349,6 +349,8 @@ $(document).ready(function () {
 			document.querySelectorAll('#hideCols input[type="checkbox"]')[12].click();
 		}
 		document.querySelectorAll('#hideCols input[type="checkbox"]')[13].click();
-		document.querySelector('table tr th:nth-child(9)').click();
+		//document.querySelector('table tr th:nth-child(9)').click();
+		document.querySelector('table tr th:nth-child(2)').click();
+		document.querySelector('table tr th:nth-child(2)').click();
 	}
 });

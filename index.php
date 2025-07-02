@@ -107,6 +107,11 @@ if (isset($_GET['p'])) {
 	$where[] = "postulated IS NULL";
 }
 
+if (isset($_GET['searched'])) {
+	$where[] = "searched=?";
+	$data[] = $_GET['searched'];
+}
+
 $sql = "SELECT 
 	J.id, C.name as companie, J.name, J.localisation, J.salary, J.salaryMin, 
 	J.salaryMax, J.candidats, J.filtered, J.postulated, J.refused, J.searched, J.imported 
